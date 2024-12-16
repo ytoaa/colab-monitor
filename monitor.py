@@ -24,7 +24,7 @@ def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=
                     files_to_zip.append(file_path) # 파일 경로를 리스트에 추가
                     count += 1
 
-        if count > threshold:
+        if count >= threshold:
             source_folder_name = os.path.basename(source_folder)
             zip_filename = f"{source_folder_name}_{time.strftime('%Y%m%d%H%M%S')}.zip"
             zip_filepath = os.path.join(destination_folder, zip_filename)
