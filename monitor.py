@@ -48,7 +48,7 @@ source_folder = "/content/Fooocus/outputs"  # 모니터링할 폴더 경로를 �
 destination_folder = "/content/drive/MyDrive/Loras/outputs"  # 압축 파일 저장할 폴더 경로를 지정합니다.
 
 # 폴더가 존재하지 않으면 생성합니다.
-#os.makedirs(source_folder, exist_ok=True)
+os.makedirs(source_folder, exist_ok=True)
 #os.makedirs(destination_folder, exist_ok=True)
 
 
