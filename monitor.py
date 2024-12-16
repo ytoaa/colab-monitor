@@ -3,7 +3,7 @@ import zipfile
 import time
 import shutil
 
-def monitor_and_zip(source_folder, destination_folder, threshold=8, file_types=('.webp', '.png', '.jpeg'), compression_method=zipfile.ZIP_DEFLATED, compresslevel=9):
+def monitor_and_zip(source_folder, destination_folder, threshold=16, file_types=('.webp', '.png', '.jpeg'), compression_method=zipfile.ZIP_DEFLATED, compresslevel=9):
     """
     특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다. 폴더는 삭제하지 않습니다. zip 생성 후 추가된 파일은 삭제하지 않습니다.
 
