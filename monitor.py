@@ -5,7 +5,7 @@ import shutil
 
 def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=('.webp', '.png', '.jpeg')):
     """
-    특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다.
+    특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다. 폴더는 삭제하지 않습니다. zip 생성 후 추가된 파일은 삭제하지 않습니다.
 
     Args:
         source_folder: 모니터링할 폴더의 경로.
@@ -15,10 +15,13 @@ def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=
     """
 
     while True:
+        files_to_zip = [] # zip에 포함될 파일 목록을 저장할 리스트를 생성합니다
         count = 0
-        for root, _, files in os.walk(source_folder): # 하위 폴더까지 탐색
+        for root, _, files in os.walk(source_folder):
             for file in files:
-                if file.lower().endswith(file_types): # 확장자 비교 (대소문자 구분 없이)
+                if file.lower().endswith(file_types):
+                    file_path = os.path.join(root,file)
+                    files_to_zip.append(file_path) # 파일 경로를 리스트에 추가
                     count += 1
 
         if count > threshold:
@@ -27,21 +30,20 @@ def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=
             zip_filepath = os.path.join(destination_folder, zip_filename)
 
             with zipfile.ZipFile(zip_filepath, 'w') as zipf:
-                for root, _, files in os.walk(source_folder): # 하위 폴더까지 탐색
-                    for file in files:
-                        if file.lower().endswith(file_types):
-                            file_path = os.path.join(root, file)
-                            zipf.write(file_path, arcname=os.path.relpath(file_path, source_folder)) # 상대 경로 사용
+                for file_path in files_to_zip:
+                    zipf.write(file_path, arcname=os.path.relpath(file_path, source_folder))
 
-            # 원본 파일 삭제 (필요에 따라 주석 해제)
-            for root, _, files in os.walk(source_folder):
-                for file in files:
-                    if file.lower().endswith(file_types):
-                        os.remove(os.path.join(root, file))
+            # zip에 포함된 파일만 삭제
+            for file_path in files_to_zip:
+                try:
+                    os.remove(file_path)
+                    print(f"파일 '{file_path}' 삭제 완료")
+                except OSError as e:
+                    print(f"파일 '{file_path}' 삭제 실패: {e}")
+
             print(f"압축 파일 {zip_filepath} 생성 및 원본 파일 삭제 완료.")
 
         time.sleep(10)
-
 
 # 사용 예시:
 source_folder = "/content/Fooocus/outputs"  # 모니터링할 폴더 경로를 지정합니다.
