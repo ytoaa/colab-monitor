@@ -3,7 +3,7 @@ import zipfile
 import time
 import shutil
 
-def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=('.webp', '.png', '.jpeg')):
+def monitor_and_zip(source_folder, destination_folder, threshold=8, file_types=('.webp', '.png', '.jpeg'), compression_method=zipfile.ZIP_DEFLATED, compresslevel=9):
     """
     특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다. 폴더는 삭제하지 않습니다. zip 생성 후 추가된 파일은 삭제하지 않습니다.
 
@@ -20,7 +20,7 @@ def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=
         for root, _, files in os.walk(source_folder):
             for file in files:
                 if file.lower().endswith(file_types):
-                    file_path = os.path.join(root,file)
+                    file_path = os.path.join(root, file)
                     files_to_zip.append(file_path) # 파일 경로를 리스트에 추가
                     count += 1
 
@@ -29,7 +29,7 @@ def monitor_and_zip(source_folder, destination_folder, threshold=32, file_types=
             zip_filename = f"{source_folder_name}_{time.strftime('%Y%m%d%H%M%S')}.zip"
             zip_filepath = os.path.join(destination_folder, zip_filename)
 
-            with zipfile.ZipFile(zip_filepath, 'w') as zipf:
+            with zipfile.ZipFile(zip_filepath, 'w', compression=compression_method, compresslevel=compresslevel) as zipf:
                 for file_path in files_to_zip:
                     zipf.write(file_path, arcname=os.path.relpath(file_path, source_folder))
 
@@ -54,4 +54,4 @@ os.makedirs(source_folder, exist_ok=True)
 #os.makedirs(destination_folder, exist_ok=True)
 
 
-monitor_and_zip(source_folder, destination_folder)
+monitor_and_zip(source_folder, destination_folder, compression_method=zipfile.ZIP_DEFLATED)
