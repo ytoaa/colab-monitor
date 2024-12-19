@@ -34,6 +34,7 @@ def monitor_and_zip(source_folder, destination_folder, threshold, file_types=('.
                     zipf.write(file_path, arcname=os.path.relpath(file_path, source_folder))
 
             # zip에 포함된 파일 삭제
+            time.sleep(5)
             for file_path in files_to_zip:
                 try:
                     os.remove(file_path)
