@@ -1,27 +1,27 @@
 import os
 import zipfile
 import time
-import shutil
+import argparse
 
-def monitor_and_zip(source_folder, destination_folder, threshold=8, file_types=('.webp', '.png', '.jpeg'), compression_method=zipfile.ZIP_DEFLATED, compresslevel=9):
+def monitor_and_zip(source_folder, destination_folder, threshold, file_types=('.webp', '.png', '.jpeg'), compression_method=zipfile.ZIP_DEFLATED, compresslevel=9):
     """
-    특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다. 폴더는 삭제하지 않습니다. zip 생성 후 추가된 파일은 삭제하지 않습니다.
+    특정 폴더 및 하위 폴더를 모니터링하고, 지정된 파일 형식의 파일 개수가 threshold를 넘으면 파일들을 zip으로 압축하여 다른 폴더로 이동합니다.
+    압축 생성 후 추가된 파일은 삭제하지 않습니다.
 
     Args:
         source_folder: 모니터링할 폴더의 경로.
         destination_folder: 압축된 zip 파일을 저장할 폴더 경로.
         threshold: 파일 개수 임계값.
-        file_types: 카운트할 파일 형식들의 튜플 (예: ('.webp', '.png', '.jpeg'))
+        file_types: 카운트할 파일 형식들의 튜플 (예: ('.webp', '.png', '.jpeg')).
     """
-
     while True:
-        files_to_zip = [] # zip에 포함될 파일 목록을 저장할 리스트를 생성합니다
+        files_to_zip = []  # zip에 포함될 파일 목록 저장
         count = 0
         for root, _, files in os.walk(source_folder):
             for file in files:
                 if file.lower().endswith(file_types):
                     file_path = os.path.join(root, file)
-                    files_to_zip.append(file_path) # 파일 경로를 리스트에 추가
+                    files_to_zip.append(file_path)  # 파일 경로 추가
                     count += 1
 
         if count >= threshold:
@@ -33,7 +33,7 @@ def monitor_and_zip(source_folder, destination_folder, threshold=8, file_types=(
                 for file_path in files_to_zip:
                     zipf.write(file_path, arcname=os.path.relpath(file_path, source_folder))
 
-            # zip에 포함된 파일만 삭제
+            # zip에 포함된 파일 삭제
             for file_path in files_to_zip:
                 try:
                     os.remove(file_path)
@@ -45,13 +45,24 @@ def monitor_and_zip(source_folder, destination_folder, threshold=8, file_types=(
 
         time.sleep(10)
 
-# 사용 예시:
-source_folder = "/content/Fooocus/outputs"  # 모니터링할 폴더 경로를 지정합니다.
-destination_folder = "/content/drive/MyDrive/Loras/outputs"  # 압축 파일 저장할 폴더 경로를 지정합니다.
+if __name__ == "__main__":
+    # 명령줄 인수를 처리하기 위한 argparse 설정
+    parser = argparse.ArgumentParser(description="모니터링하고 파일을 압축하는 스크립트입니다.")
+    parser.add_argument("--source", required=True, help="모니터링할 폴더 경로")
+    parser.add_argument("--destination", required=True, help="압축 파일 저장할 폴더 경로")
+    parser.add_argument("--threshold", type=int, required=True, help="파일 개수 임계값")
+    parser.add_argument("--file_types", nargs='*', default=['.webp', '.png', '.jpeg'], help="대상 파일 확장자 리스트")
+    args = parser.parse_args()
 
-# 폴더가 존재하지 않으면 생성합니다.
-os.makedirs(source_folder, exist_ok=True)
-#os.makedirs(destination_folder, exist_ok=True)
+    # 경로가 존재하지 않으면 생성
+    os.makedirs(args.source, exist_ok=True)
+    os.makedirs(args.destination, exist_ok=True)
 
-
-monitor_and_zip(source_folder, destination_folder, compression_method=zipfile.ZIP_DEFLATED)
+    # 함수 호출
+    monitor_and_zip(
+        source_folder=args.source,
+        destination_folder=args.destination,
+        threshold=args.threshold,
+        file_types=tuple(args.file_types),
+        compression_method=zipfile.ZIP_DEFLATED
+    )
